@@ -23,8 +23,23 @@ class Settings(BaseSettings):
     retrieval_top_k: int = 4
     retrieval_min_score: float = 0.3
 
+    # Servidores MCP registrados: "nombre=url,nombre2=url2". Vacío = el
+    # agente corre solo con las tools locales de RAG.
+    mcp_servers: str = ""
+
     class Config:
         env_file = ".env"
 
 
 settings = Settings()
+
+
+def parsed_mcp_servers() -> dict[str, str]:
+    servers = {}
+    for entry in settings.mcp_servers.split(","):
+        entry = entry.strip()
+        if not entry or "=" not in entry:
+            continue
+        name, url = entry.split("=", 1)
+        servers[name.strip()] = url.strip()
+    return servers

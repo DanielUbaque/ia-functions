@@ -1,0 +1,5 @@
+- Chunking: pasas de cortar por palabras a tamaño fijo, a respetar párrafos/frases con solapamiento (idea tomada de él, más precisa).
+- Colecciones: unificas documentos + diccionario de campo en una sola tabla (collection), en vez de dos modelos separados como hizo él.
+- LLM: tu generate() simple pasa a converse() con tool-calling (como el de él), para los 4 proveedores.
+- Se agrega (que tú no tenías y él sí): agente con herramientas, memoria de conversación, y consulta a datos reales del backend — pero vía MCP a su API pública, no tocando su DB ni su código como hizo él.
+- Embeddings: se mantiene tu decisión (sentence-transformers local), no la suya (Gemini) — pendiente de confirmar si la cambias.
