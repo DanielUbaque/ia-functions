@@ -11,6 +11,22 @@ services:
     volumes:
       - ./app:/app/app
 
+  mcp-backend:
+    build: .
+    command: python -m mcp_server
+    ports:
+      - "${MCP_PORT:-8002}:8000"
+    environment:
+      MCP_PORT: 8000
+      BACKEND_API_BASE_URL: ${BACKEND_API_BASE_URL:-http://host.docker.internal:8000}
+    extra_hosts:
+      # host.docker.internal no resuelve nativo en Linux (sí en Docker
+      # Desktop de Mac/Windows); este mapeo lo hace funcionar también en
+      # el servidor de producción.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./mcp_server:/app/mcp_server
+
   db:
     image: pgvector/pgvector:pg16
     environment:
