@@ -79,3 +79,35 @@ El servicio `api` monta `./app` como volumen y `mcp-backend` monta
 `./mcp_server`, así que los cambios de código se reflejan sin reconstruir la
 imagen (reinicia el contenedor correspondiente para que se recarguen:
 `docker compose restart api mcp-backend`).
+
+## Despliegue en producción
+
+`docker-compose.yml` ata `api`, `mcp-backend` y `db` a `127.0.0.1` — no
+quedan expuestos directamente a internet. En el servidor compartido
+(`44.213.47.34`), nginx es el único punto público (puerto 80) y enruta hacia
+acá, igual que ya hace con `backend` y `frontend`. No hace falta abrir un
+puerto nuevo en el firewall de Lightsail.
+
+Agregar en la config de nginx del servidor (`/etc/nginx/sites-available/colflux`,
+junto a los `location` que ya existen para `backend`/`frontend`):
+
+```nginx
+location /ia/ {
+    proxy_pass http://127.0.0.1:8003/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+Ajustar `8003` al `WEB_PORT` real definido en el `.env` del servidor. Luego:
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Con esto, `http://44.213.47.34/ia/chat` (y `/ia/ingest`, `/ia/health`, etc.)
+quedan disponibles vía el mismo dominio/IP que ya usa el resto del
+ecosistema — es la URL que debe usar `VITE_API_URL` en `frontend` una vez
+verificado que funciona.
